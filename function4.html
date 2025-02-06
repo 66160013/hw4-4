@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ez">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบทำแบบทดสอบออนไลน์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-100 p-5">
+    <div class="max-w-2xl mx-auto bg-white p-10 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">แบบทดสอบออนไลน์</h2>
+        <div id="quizContainer"></div>
+        <button id="startQuiz" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">เริ่มทำข้อสอบ</button>
+        <button id="submitQuiz" class="mt-4 px-4 py-2 float-right bg-green-500 text-white rounded hidden">ส่งคำตอบ</button>
+        <p id="result" class="mt-4 font-bold"></p>
+        <p id="timer" class="mt-4 font-bold"></p>
+    </div>
+
+    <script>
+        const quizData = [
+            { id: 1, text: "HTML ย่อมาจากอะไร?", choices: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language", "None"], correct: "Hyper Text Markup Language" },
+            { id: 2, text: "CSS ใช้สำหรับอะไร?", choices: ["กำหนดโครงสร้างเว็บ", "กำหนดสไตล์ของเว็บ", "ใช้ควบคุมฐานข้อมูล", "สร้าง API"], correct: "กำหนดสไตล์ของเว็บ" },
+            { id: 3, text: "JavaScript เป็นอะไร?", choices: ["ภาษาสคริปต์ฝั่งเซิร์ฟเวอร์", "ภาษาสคริปต์ฝั่งไคลเอนต์", "เครื่องมือแก้ไข HTML", "None"], correct: "ภาษาสคริปต์ฝั่งไคลเอนต์" },
+            { id: 4, text: "JSON คืออะไร?", choices: ["Java Standard Object Notation", "JavaScript Object Notation", "Java Structured Object Naming", "None"], correct: "JavaScript Object Notation" },
+            { id: 5, text: "DOM ใช้ทำอะไร?", choices: ["จัดการฐานข้อมูล", "จัดการโครงสร้างเว็บเพจ", "สร้าง API", "None"], correct: "จัดการโครงสร้างเว็บเพจ" },
+            { id: 6, text: "ระบบจัดการคลังสินค้าทำหน้าที่หลักอะไร?", choices: ["เก็บข้อมูลลูกค้า", "ตรวจสอบและบริหารสินค้าคงคลัง", "สร้างเว็บไซต์", "คำนวณภาษี"], correct: "ตรวจสอบและบริหารสินค้าคงคลัง" },
+            { id: 7, text: "minStock คืออะไร?", choices: ["ราคาขั้นต่ำของสินค้า", "จำนวนขั้นต่ำที่ต้องมีในคลัง", "จำนวนสูงสุดที่ขายได้", "รหัสสินค้าพิเศษ"], correct: "จำนวนขั้นต่ำที่ต้องมีในคลัง" },
+            { id: 8, text: "การจัดเก็บข้อมูลสินค้าควรใช้โครงสร้างข้อมูลแบบใด?", choices: ["String", "JSON", "Boolean", "Integer"], correct: "JSON" },
+            { id: 9, text: "คำสั่งใดใช้ตรวจสอบว่าสินค้าในสต็อกมีจำนวนน้อยกว่ากำหนด?", choices: ["if (stock > minStock)", "if (stock < minStock)", "if (stock === minStock)", "if (stock != minStock)"], correct: "if (stock < minStock)" },
+            { id: 10, text: "ค่าของ totalSales หมายถึงอะไร?", choices: ["จำนวนสินค้าทั้งหมดในคลัง", "ราคาสินค้ารวม", "ยอดขายรวมทั้งหมด", "จำนวนสินค้าที่ขายได้ต่อวัน"], correct: "ยอดขายรวมทั้งหมด" },
+            { id: 11, text: "คำสั่งใดใช้สำหรับจัดเก็บข้อมูลลงใน Local Storage?", choices: ["localStorage.getItem(key)", "localStorage.setItem(key, value)", "localStorage.removeItem(key)", "localStorage.clear()"], correct: "localStorage.setItem(key, value)" },
+            { id: 12, text: "คำสั่งใดใช้ดึงข้อมูลจาก Local Storage?", choices: ["localStorage.getItem(key)", "localStorage.setItem(key, value)", "localStorage.removeItem(key)", "localStorage.updateItem(key, value)"], correct: "localStorage.getItem(key)" },
+            { id: 13, text: "JSON.stringify() ใช้ทำอะไร?", choices: ["แปลง JSON เป็น Object", "แปลง Object เป็น JSON", "บันทึกข้อมูลไปยังฐานข้อมูล", "คำนวณยอดขายสินค้า"], correct: "แปลง Object เป็น JSON" },
+            { id: 14, text: "JSON.parse() ใช้ทำอะไร?", choices: ["แปลง JSON เป็น Object", "แปลง Object เป็น JSON", "ลบข้อมูลจาก Local Storage", "อัปเดตจำนวนสินค้า"], correct: "แปลง JSON เป็น Object" },
+            { id: 15, text: "ถ้าเราต้องการเคลียร์ข้อมูลทั้งหมดใน Local Storage ต้องใช้คำสั่งใด?", choices: ["localStorage.clear()", "localStorage.removeItem()", "localStorage.deleteAll()", "localStorage.reset()"], correct: "localStorage.clear()" },
+            { id: 16, text: " คำสั่ง if-else ใช้ทำอะไร?", choices: ["ใช้ทำซ้ำข้อมูล", "ใช้กำหนดเงื่อนไขในการทำงาน", "ใช้สร้างอาร์เรย์", "ใช้เก็บข้อมูลสินค้า"], correct: "ใช้กำหนดเงื่อนไขในการทำงาน" },
+            { id: 17, text: "คำสั่ง forEach() ใช้ทำอะไร?", choices: ["ใช้เพิ่มสินค้าใหม่", "ใช้ลบสินค้า", "ใช้แสดงข้อมูลทุกสินค้าที่มี", "ใช้ตรวจสอบว่าสินค้าหมดหรือไม่"], correct: "ใช้แสดงข้อมูลทุกสินค้าที่มี" },
+            { id: 18, text: "คำสั่ง for ใช้ทำอะไร?", choices: ["วนลูปเพื่อดำเนินการซ้ำ", "เชื่อมต่อฐานข้อมูล", "กำหนดค่าตัวแปร", "สร้างฟังก์ชัน"], correct: "วนลูปเพื่อดำเนินการซ้ำ" },
+            { id: 19, text: "คำสั่ง while ใช้ทำอะไร?", choices: ["วนลูปตราบใดที่เงื่อนไขเป็นจริง", "เพิ่มจำนวนสินค้า", "ลบสินค้าจากระบบ", "แปลง JSON เป็น Object"], correct: "วนลูปตราบใดที่เงื่อนไขเป็นจริง" },
+            { id: 20, text: "คำสั่ง break ใช้ทำอะไรในลูป?", choices: ["หยุดการทำงานของลูปทันที", "ข้ามการทำงานหนึ่งรอบของลูป", "ลบข้อมูลสินค้า", "เพิ่มสินค้าใหม่"], correct: "หยุดการทำงานของลูปทันที" }
+        ];
+
+        let selectedQuestions = [];
+        let timer;
+        const timeLimit = 60; 
+
+        document.getElementById("startQuiz").addEventListener("click", () => {
+            selectedQuestions = quizData.sort(() => 0.5 - Math.random()).slice(0, 5);
+            renderQuiz();
+            document.getElementById("submitQuiz").classList.remove("hidden");
+            startTimer(timeLimit);
+        });
+
+        function renderQuiz() {
+            const container = document.getElementById("quizContainer");
+            container.innerHTML = "";
+            selectedQuestions.forEach(q => {
+                const questionHTML = `<div class='mb-4'><p class='font-bold'>${q.text}</p>` +
+                    q.choices.map(choice => `
+                        <label class='block'>
+                            <input type='radio' name='q${q.id}' value='${choice}'> ${choice}
+                        </label>`).join('') + "</div>";
+                container.innerHTML += questionHTML;
+            });
+        }
+
+        function startTimer(duration) {
+            let timeRemaining = duration;
+            const timerElement = document.getElementById("timer");
+            timerElement.textContent = `เวลาที่เหลือ: ${timeRemaining} วินาที`;
+
+            timer = setInterval(() => {
+                timeRemaining--;
+                timerElement.textContent = `เวลาที่เหลือ: ${timeRemaining} วินาที`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            selectedQuestions.forEach(q => {
+                const selectedAnswer = document.querySelector(`input[name='q${q.id}']:checked`);
+                if (selectedAnswer && selectedAnswer.value === q.correct) {
+                    score++;
+                }
+            });
+            document.getElementById("result").textContent = `คะแนนของคุณ: ${score} / 5`;
+            document.getElementById("submitQuiz").classList.add("hidden");
+        }
+
+        document.getElementById("submitQuiz").addEventListener("click", () => {
+            clearInterval(timer);
+            submitQuiz();
+        });
+    </script>
+</body>
+</html>
